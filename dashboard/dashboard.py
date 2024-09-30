@@ -71,7 +71,7 @@ conclusions = {
     "tab6": """
     **Example Question: How can Olist customers be categorized based on the number of purchases in a year?**
 
-    Analysis of customer segmentation based on the number of purchases in 2018 shows that the vast majority of customers, **51,052** in total, made only one purchase, indicating that they fall into the **"Low"** category. A much smaller segment of **1,095** customers made 2 to 3 purchases, categorized as **"Medium"**, while only **12** customers were classified as **"High"** with 4 to 10 purchases, and none made more than 10 purchases, falling into the **"Very High"** category. This indicates that Olist's customer base consists largely of one-time buyers, suggesting a significant opportunity for Olist to improve customer retention by implementing strategies such as loyalty programs, personalized offers, or targeted campaigns to encourage repeat purchases and increase overall customer lifetime value.
+    Analysis of customer segmentation based on number of purchases in 2018 shows that the vast majority of customers, **44,889** in total, made only one purchase, indicating that they fall into the **"Low"** category. A much smaller segment of **6,436** customers made 2 to 3 purchases, categorized as **"Medium"**, while only **796** customers were classified as **"High"** with 4 to 10 purchases, and **38** made more than 10 purchases, falling into the **"Very High"** category. This indicates that Olist's customer base consists largely of one-time buyers, suggesting a significant opportunity for Olist to improve customer retention by implementing strategies such as loyalty programs, personalized offers, or targeted campaigns to encourage repeat purchases and increase overall customer lifetime value.
     """
 }
 
@@ -448,74 +448,103 @@ with tab5:
 
 # Visualization 6: Customer Segmentation Based on Purchase Frequency
 with tab6:
-    st.header("Customer Segmentation Based on Purchase Frequency in a Year")
 
-    # Define the segments and calculate the counts based on frequency
-    low_segment = rfm_data[rfm_data['frequency'] == 1]
-    medium_segment = rfm_data[(rfm_data['frequency'] >= 2) & (rfm_data['frequency'] <= 3)]
-    high_segment = rfm_data[(rfm_data['frequency'] >= 4) & (rfm_data['frequency'] <= 10)]
-    very_high_segment = rfm_data[rfm_data['frequency'] > 10]
+    # Add header and filter for the year (from 2016 to 2018) with default set to 2018
+    st.header("Customer Segmentation Based on Purchase Frequency in Selected Year(s)")
+    st.subheader("Filter Options")
 
-    # Count the number of customers in each segment
-    segment_counts = [
-        len(low_segment),
-        len(medium_segment),
-        len(high_segment),
-        len(very_high_segment)
-    ]
+    # Convert 'order_purchase_timestamp' to datetime if it's not already
+    if not pd.api.types.is_datetime64_any_dtype(all_data['order_purchase_timestamp']):
+        all_data['order_purchase_timestamp'] = pd.to_datetime(all_data['order_purchase_timestamp'])
 
-    # Define labels and colors for the segments
-    segment_conditions = ['Low: 1 Purchase', 'Medium: 2-3 Purchases', 'High: 4-10 Purchases',
-                          'Very High: > 10 Purchases']
-    segment_colors = ['skyblue', 'orange', 'green', 'red']
-
-    # Create the bar chart
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    # Plotting bars with the respective colors
-    bars = ax.bar(range(len(segment_counts)), segment_counts, color=segment_colors, edgecolor='black')
-
-    # Adding text annotations for each bar
-    for i, bar in enumerate(bars):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 50,  # Adjust the position above the bar
-            f'{int(bar.get_height())}',  # Display the height value as an integer
-            ha='center',
-            va='bottom',
-            fontsize=10
-        )
-
-    # Adding labels and title
-    ax.set_xlabel('Customer Segment', fontsize=14)
-    ax.set_ylabel('Number of Customers', fontsize=14)
-    ax.set_title('Customer Segmentation Based on Purchase Frequency in a Year', fontsize=16, weight='bold')
-
-    # Adding the legend
-    legend = ax.legend(
-        handles=bars,
-        labels=segment_conditions,
-        loc='upper right',
-        shadow=True,
-        fontsize='medium',
-        title="Segment Conditions"
+    # Add a multiselect widget for selecting the year(s), default set to 2018
+    available_years = sorted(all_data['order_purchase_timestamp'].dt.year.unique())
+    selected_years = st.multiselect(
+        "Select Year(s) for Analysis:",
+        options=available_years,
+        default=[2018],
+        key="year_selection_tab6"
     )
 
-    # Remove top and right spines for better aesthetics
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
+    # Filter the data based on selected years
+    filtered_data = all_data[all_data['order_purchase_timestamp'].dt.year.isin(selected_years)]
 
-    # Adding gridlines for better readability
-    ax.grid(axis='y', linestyle='--', alpha=0.7)
+    # If no years are selected, display a warning
+    if filtered_data.empty:
+        st.warning("No data available for the selected year(s). Please adjust your selection.")
+    else:
+        frequency_data = filtered_data.groupby('customer_unique_id').size().reset_index(name='frequency')
+        low_segment = frequency_data[frequency_data['frequency'] == 1]
+        medium_segment = frequency_data[(frequency_data['frequency'] >= 2) & (frequency_data['frequency'] <= 3)]
+        high_segment = frequency_data[(frequency_data['frequency'] >= 4) & (frequency_data['frequency'] <= 10)]
+        very_high_segment = frequency_data[frequency_data['frequency'] > 10]
 
-    plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
-                ha="center",
-                fontsize=9, color='gray')
+        # Count the number of customers in each segment
+        segment_counts = [
+            len(low_segment),
+            len(medium_segment),
+            len(high_segment),
+            len(very_high_segment)
+        ]
 
-    # Display the plot in Streamlit
-    st.pyplot(fig)
+        # Define labels and colors for the segments
+        segment_conditions = ['Low: 1 Purchase',
+                              'Medium: 2-3 Purchases',
+                              'High: 4-10 Purchases',
+                              'Very High: > 10 Purchases']
+        segment_colors = ['skyblue', 'orange', 'green', 'red']
 
-    st.write(conclusions['tab6'])
+        # Create the bar chart
+        fig, ax = plt.subplots(figsize=(12, 6))
+        bars = ax.bar(range(len(segment_counts)), segment_counts, color=segment_colors, edgecolor='black')
+
+        # Adding text annotations for each bar, positioned more precisely
+        for i, bar in enumerate(bars):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + (bar.get_height() * 0.02),
+                f'{int(bar.get_height())}',
+                ha='center',
+                va='bottom',
+                fontsize=10,
+                fontweight='bold',
+                color='black'
+            )
+
+        # Set the title based on selected years
+        selected_years_str = ', '.join(map(str, selected_years))
+        plot_title = f"Customer Segmentation Based on Purchase Frequency in Year(s): {selected_years_str}"
+
+        # Adding labels and title
+        ax.set_xlabel('Customer Segment', fontsize=14)
+        ax.set_ylabel('Number of Customers', fontsize=14)
+        ax.set_title(plot_title, fontsize=16, weight='bold')
+
+        # Adding the legend
+        legend = ax.legend(
+            handles=bars,
+            labels=segment_conditions,
+            loc='upper right',
+            shadow=True,
+            fontsize='medium',
+            title="Segment Conditions"
+        )
+
+        # Remove top and right spines for better aesthetics
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        # Adding gridlines for better readability
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+        plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                    ha="center",
+                    fontsize=9, color='gray')
+
+        st.pyplot(fig)
+
+        # Display the conclusion text (make sure to define 'conclusions' dict beforehand)
+        st.write(conclusions['tab6'])
 
 current_year = datetime.datetime.now().year
 footer = f"""
