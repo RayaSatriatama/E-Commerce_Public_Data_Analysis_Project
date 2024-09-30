@@ -21,11 +21,11 @@ This section describes how to set up the Python environment to run the dashboard
 ### Setup Environment - Anaconda
 1. **Create a new environment**:
    ```sh
-   conda create --name main-ds python=3.9
+   conda create --name main-BECP python=3.9
    ```
 2. **Activate the environment**:
    ```sh
-   conda activate main-ds
+   conda activate main-BECP
    ```
 3. **Install the required packages**:
    ```sh

@@ -404,8 +404,8 @@ with tab5:
         columns=['state', 'total_purchases'],
         key_on='feature.properties.sigla',
         fill_color='YlGnBu',
-        fill_opacity=0.5,
-        line_opacity=0.3,
+        fill_opacity=0.7,
+        line_opacity=0.5,
         line_color='black',
         legend_name='Number of Purchases by State',
         highlight=True
