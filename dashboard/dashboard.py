@@ -8,6 +8,7 @@ import folium
 from streamlit_folium import folium_static
 import json
 from pathlib import Path
+import datetime
 
 # Set page configuration for a better look
 st.set_page_config(
@@ -20,19 +21,23 @@ st.set_page_config(
 # Define the data paths using pathlib for the current directory
 base_path = Path(__file__).parent  # Get the current script's directory
 
+
 # Load all_data.csv
 @st.cache_data
 def load_data():
     file_path = base_path / "all_data.csv"  # Construct the full path to all_data.csv
     return pd.read_csv(file_path)
 
+
 all_data = load_data()
+
 
 # Load rfm_data.csv
 @st.cache_data
 def load_rfm_data():
     file_path = base_path / "rfm_data.csv"  # Construct the full path to rfm_data.csv
     return pd.read_csv(file_path)
+
 
 rfm_data = load_rfm_data()
 
@@ -76,16 +81,17 @@ available_quarters = sorted(rfm_data['quarter'].unique())
 
 # Main Page Title
 st.title("Brazilian E-Commerce Public Data Analysis")
-st.markdown("This dashboard visualizes insights from Olist Brazilian E-Commerce Public Dataset using various visualizations.")
+st.markdown(
+    "This dashboard visualizes insights from Olist Brazilian E-Commerce Public Dataset using various visualizations.")
 
 # Tabs for Visualizations
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     ["📊 Delivery Time Analysis",
      "🕒 Recency Distribution Analysis",
-     "🧑 Customer Purchase Frequency",
+     "📊 Customer Purchase Frequency",
      "💸 Average Expenditure",
      "🌍 Geographic Analysis",
-     "Customer Segmentation"])
+     "🧑 Customer Segmentation"])
 
 # Visualization 1: Delivery Time Analysis
 with tab1:
@@ -153,6 +159,10 @@ with tab1:
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
+        plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                    ha="center",
+                    fontsize=9, color='gray')
+
         st.pyplot(fig)
 
         st.write(conclusions['tab1'])
@@ -184,6 +194,10 @@ with tab2:
                 fontsize=10,
                 color='black'
             )
+
+    plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                ha="center",
+                fontsize=9, color='gray')
 
     st.pyplot(fig)
 
@@ -274,7 +288,10 @@ with tab3:
         # Adding a legend to clarify that the bars represent frequency counts
         ax.legend(['Customer Frequency'], loc='upper right', fontsize=12, title='Legend')
 
-        # Display the plot in Streamlit
+        plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                    ha="center",
+                    fontsize=9, color='gray')
+
         st.pyplot(fig)
 
         st.write(conclusions['tab3'])
@@ -340,6 +357,10 @@ with tab4:
         # Add some decorations to make it more polished
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
+
+        plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                    ha="center",
+                    fontsize=9, color='gray')
 
         st.pyplot(fig)
 
@@ -425,7 +446,6 @@ with tab5:
 
     st.write(conclusions['tab5'])
 
-
 # Visualization 6: Customer Segmentation Based on Purchase Frequency
 with tab6:
     st.header("Customer Segmentation Based on Purchase Frequency in a Year")
@@ -488,7 +508,32 @@ with tab6:
     # Adding gridlines for better readability
     ax.grid(axis='y', linestyle='--', alpha=0.7)
 
+    plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
+                ha="center",
+                fontsize=9, color='gray')
+
     # Display the plot in Streamlit
     st.pyplot(fig)
 
     st.write(conclusions['tab6'])
+
+current_year = datetime.datetime.now().year
+footer = f"""
+    <style>
+        .footer {{
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f1f1f1;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+        }}
+    </style>
+    <div class="footer">
+        &copy; {current_year} Mohammad Raya Satriatama. All Rights Reserved.
+    </div>
+"""
+st.markdown(footer, unsafe_allow_html=True)
