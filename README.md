@@ -8,6 +8,19 @@ You can access the live version of the dashboard here:
 
 ---
 
+## 📑 Table of Contents
+1. [Setup Environment](#-setup-environment)
+   - [Anaconda](#setup-environment---anaconda)
+   - [Shell/Terminal](#setup-environment---shellterminal)
+2. [Cloning the Repository](#-cloning-the-repository)
+3. [Running the Dashboard](#-running-the-dashboard)
+4. [Directory Structure](#-directory-structure)
+5. [Requirements](#-requirements)
+6. [Running the Web App](#-running-the-web-app)
+7. [Example Usage and Insights](#-example-usage-and-insights)
+
+---
+
 ## 🛠 Setup Environment
 
 This section describes how to set up the Python environment to run the dashboard, either using **Anaconda** or a general **Shell/Terminal** setup.
@@ -44,13 +57,36 @@ This section describes how to set up the Python environment to run the dashboard
 
 ---
 
+## 📦 Cloning the Repository
+
+To get started with this project, clone the repository to your local machine:
+
+1. **Clone the repository**:
+   ```sh
+   git clone https://github.com/RayaSatriatama/E-Commerce_Public_Data_Analysis_Project.git
+   ```
+
+2. **Navigate to the project directory**:
+   ```sh
+   cd E-Commerce_Public_Data_Analysis_Project
+   ```
+
+3. **Navigate to the directory containing the dashboard code**:
+   ```sh
+   cd dashboard
+   ```
+
+---
+
 ## 📊 Running the Dashboard
 
 To run the Streamlit app locally, use the command:
 
 ```sh
-streamlit run dashboard/dashboard.py
+streamlit run dashboard.py
 ```
+
+Make sure you are in the `dashboard/` directory before executing this command.
 
 ---
 
@@ -133,7 +169,5 @@ This dashboard provides answers to various business questions, including:
 4. **Average Expenditure Analysis**: Shows the spending patterns of customers.
 5. **Geographic Analysis**: Highlights the regions with the highest number of purchases.
 6. **Customer Segmentation**: Classifies customers based on their purchase frequency.
-
-These insights can be found in different tabs of the dashboard, with each visualization tailored to address specific business questions.
 
 ---
