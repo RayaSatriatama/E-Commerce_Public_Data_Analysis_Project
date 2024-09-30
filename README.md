@@ -1,9 +1,3 @@
-Sure, based on the provided images and the information you've shared, I'll create an updated `README.md` for you. The instructions will include setting up the environment, the directory structure, and the link to the web application as requested.
-
-Here's the updated `README.md`:
-
----
-
 # E-Commerce Public Data Analysis Project 🌟
 
 This project is a **Streamlit** dashboard that provides insights into the Brazilian E-Commerce Public Dataset by Olist using various visualizations. The dashboard is designed to help answer specific business questions related to customer purchase behavior, regional performance, delivery times, and more.
