@@ -488,22 +488,26 @@ with tab6:
         ]
 
         # Define labels and colors for the segments
-        segment_conditions = ['Low: 1 Purchase',
-                              'Medium: 2-3 Purchases',
-                              'High: 4-10 Purchases',
-                              'Very High: > 10 Purchases']
+        segment_labels = ['Low Frequency (1 Purchase)',
+                          'Medium Frequency (2-3 Purchases)',
+                          'High Frequency (4-10 Purchases)',
+                          'Very High Frequency (> 10 Purchases)']
+        segment_label_x = ['Low',
+                          'Medium',
+                          'High',
+                          'Very High']
         segment_colors = ['skyblue', 'orange', 'green', 'red']
 
-        # Create the bar chart
+        # Create the bar chart with labels on the x-axis
         fig, ax = plt.subplots(figsize=(12, 6))
-        bars = ax.bar(range(len(segment_counts)), segment_counts, color=segment_colors, edgecolor='black')
+        bars = ax.bar(segment_label_x, segment_counts, color=segment_colors, edgecolor='black')
 
         # Adding text annotations for each bar, positioned more precisely
         for i, bar in enumerate(bars):
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
                 bar.get_height() + (bar.get_height() * 0.02),
-                f'{int(bar.get_height())}',
+                f'{int(bar.get_height())} Customers',
                 ha='center',
                 va='bottom',
                 fontsize=10,
@@ -520,14 +524,17 @@ with tab6:
         ax.set_ylabel('Number of Customers', fontsize=14)
         ax.set_title(plot_title, fontsize=16, weight='bold')
 
+        # Set x-axis labels at a 45-degree angle for better readability
+        plt.xticks(rotation=45, ha='right')
+
         # Adding the legend
         legend = ax.legend(
             handles=bars,
-            labels=segment_conditions,
+            labels=segment_labels,
             loc='upper right',
             shadow=True,
             fontsize='medium',
-            title="Segment Conditions"
+            title="Purchase Frequency Segments"
         )
 
         # Remove top and right spines for better aesthetics
@@ -536,10 +543,6 @@ with tab6:
 
         # Adding gridlines for better readability
         ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-        plt.figtext(0.5, -0.05, f"© {datetime.datetime.now().year} Mohammad Raya Satriatama. All rights reserved.",
-                    ha="center",
-                    fontsize=9, color='gray')
 
         st.pyplot(fig)
 
