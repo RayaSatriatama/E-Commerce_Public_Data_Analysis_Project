@@ -355,7 +355,7 @@ with tab5:
     state_purchases = state_purchases.sort_values(by='total_purchases', ascending=False)
 
     # Load GeoJSON file for Brazil states boundaries
-    geojson_file_path = '../map/brazil-states.geojson'
+    geojson_file_path = Path(__file__).parent.parent / 'map' / 'brazil-states.geojson'
     try:
         with open(geojson_file_path, 'r') as f:
             brazil_geo = json.load(f)
