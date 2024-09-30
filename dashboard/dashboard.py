@@ -7,30 +7,32 @@ import plotly.express as px
 import folium
 from streamlit_folium import folium_static
 import json
+from pathlib import Path
 
 # Set page configuration for a better look
 st.set_page_config(
-    page_title="Olist Data Analysis",
+    page_title="Brazilian E-Commerce Public Data Analysis",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Define the data paths using pathlib for the current directory
+base_path = Path(__file__).parent  # Get the current script's directory
 
 # Load all_data.csv
 @st.cache_data
 def load_data():
-    return pd.read_csv("all_data.csv")
-
+    file_path = base_path / "all_data.csv"  # Construct the full path to all_data.csv
+    return pd.read_csv(file_path)
 
 all_data = load_data()
-
 
 # Load rfm_data.csv
 @st.cache_data
 def load_rfm_data():
-    return pd.read_csv("rfm_data.csv")
-
+    file_path = base_path / "rfm_data.csv"  # Construct the full path to rfm_data.csv
+    return pd.read_csv(file_path)
 
 rfm_data = load_rfm_data()
 
