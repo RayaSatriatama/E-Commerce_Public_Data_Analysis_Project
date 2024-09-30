@@ -17,57 +17,165 @@ st.set_page_config(
 )
 
 
-# Load the data from CSV
+# Load all_data.csv
 @st.cache_data
 def load_data():
-    return pd.read_csv('all_data.csv')
+    return pd.read_csv("all_data.csv")
 
 
 all_data = load_data()
 
-# Sidebar for filtering
-st.sidebar.header('Filter Options')
-order_status = st.sidebar.multiselect(
-    'Select Order Status:',
-    options=all_data['order_status'].unique(),
-    default=all_data['order_status'].unique()
-)
 
-# Filter data
-filtered_data = all_data[all_data['order_status'].isin(order_status)]
+# Load rfm_data.csv
+@st.cache_data
+def load_rfm_data():
+    return pd.read_csv("rfm_data.csv")
+
+
+rfm_data = load_rfm_data()
+
+# Conclusion and Custom Styling
+conclusions = {
+    "tab1": """
+    **Example Question: What is the average delivery time of products to customers across Brazil?**
+
+    The average delivery time for products across Brazil is primarily between **5 to 15 days**, with the highest concentration in the **5-10 day range**. However, there is a noticeable decline beyond 15 days, indicating longer delays for some orders. This suggests that most deliveries are on time, but there is room for improvement in reducing longer delivery times to ensure consistent service and higher customer satisfaction.
+    """,
+    "tab2": """
+    **Example Question: When was the last time a customer made a purchase at Olist in the past year (2018)?**
+
+    The recency distribution shows that a large number of customers made their last purchase between **100 and 400 days** ago, with the highest peak at about **300 to 400 days**. As time passes beyond 400 days, there is a noticeable decrease in customer activity. This suggests that most customers have been inactive for more than a year, and re-engagement strategies may be essential to bring back customers who have not purchased recently, particularly targeting those in the 400 to 700 day range where the drop-off is significant.
+    """,
+    "tab3": """
+    **Example Question: How Frequently Did Customers Purchase Products in July, August, and September (Q3) 2018?**
+
+    The majority of customers (**12,761**) made only one purchase in July, August, and September 2018, indicating low repeat purchase behavior. A smaller group of **433 customers** made two purchases, while even fewer customers made three or four purchases (**37 and 3** respectively). This highlights potential areas for improvement in customer retention strategies to encourage more repeat purchases, such as loyalty programs or targeted follow-up marketing.
+    """,
+    "tab4": """
+    **Example Question: How much have customers spent on average over the past year (2018)?**
+    
+    The boxplot shows that the median customer expenditure in 2018 was **89.90 BRL**, indicating that half of the customers spent less than this amount. There is a notable range of expenditures among customers, with some outliers spending significantly more than the typical customer, as indicated by the extended upper whisker. However, most customers tend to spend relatively small amounts, suggesting a concentration of lower-value purchases rather than large, high-value transactions. This data can help guide marketing efforts to encourage higher spending per customer, perhaps through the introduction of incentives or bundled offers.
+    """,
+    "tab5": """
+    **Example Question: In which regions do Olist customers shop the most?**
+
+    Analyzing the number of purchases by region in Brazil, it is clear that **São Paulo (SP)** is the region with the highest number of purchases, with **48,874** orders. This is followed by **Rio de Janeiro (RJ)** with **15,191** purchases and **Minas Gerais (MG)** with **13,495** purchases. The distribution shows a significant concentration of purchases in the southeastern regions of Brazil, indicating that these regions are important markets for Olist. This concentration may be due to factors such as higher population density, better economic conditions, and improved logistics in these areas, which facilitate more frequent online shopping. This finding suggests that marketing and logistics efforts should continue to focus on these high-performing regions, while exploring growth opportunities in other states with lower shopping volumes.
+    """,
+    "tab6": """
+    **Example Question: How can Olist customers be categorized based on the number of purchases in a year?**
+
+    Analysis of customer segmentation based on the number of purchases in 2018 shows that the vast majority of customers, **51,052** in total, made only one purchase, indicating that they fall into the **"Low"** category. A much smaller segment of **1,095** customers made 2 to 3 purchases, categorized as **"Medium"**, while only **12** customers were classified as **"High"** with 4 to 10 purchases, and none made more than 10 purchases, falling into the **"Very High"** category. This indicates that Olist's customer base consists largely of one-time buyers, suggesting a significant opportunity for Olist to improve customer retention by implementing strategies such as loyalty programs, personalized offers, or targeted campaigns to encourage repeat purchases and increase overall customer lifetime value.
+    """
+}
+
+# Available years and quarters from the dataset
+available_years = sorted(rfm_data['year'].unique())
+available_quarters = sorted(rfm_data['quarter'].unique())
 
 # Main Page Title
-st.title("Olist Data Analysis")
-st.markdown("This dashboard visualizes insights from Olist dataset using various visualizations.")
+st.title("Brazilian E-Commerce Public Data Analysis")
+st.markdown("This dashboard visualizes insights from Olist Brazilian E-Commerce Public Dataset using various visualizations.")
 
 # Tabs for Visualizations
-tab1, tab2, tab3, tab4 = st.tabs(
-    ["📊 Delivery Time Analysis", "📈 Purchase Frequency", "🛒 Customer Segmentation", "🌍 Geographic Analysis"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    ["📊 Delivery Time Analysis",
+     "🕒 Recency Distribution Analysis",
+     "🧑 Customer Purchase Frequency",
+     "💸 Average Expenditure",
+     "🌍 Geographic Analysis",
+     "Customer Segmentation"])
 
 # Visualization 1: Delivery Time Analysis
 with tab1:
-    # Creating the matplotlib histogram for delivery time
+    # Add custom filter widgets within Tab 1 for Delivery Time Analysis
     st.header("Distribution of Delivery Time Across Brazil")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    n, bins, patches = ax.hist(filtered_data['delivery_time_days'].dropna(), bins=15, edgecolor='black', color='#6A5ACD', alpha=0.75)
+    st.subheader("Filter Options")
 
-    # Add grid lines along the y-axis for better readability
+    order_status = st.multiselect(
+        'Select Order Status:',
+        options=all_data['order_status'].unique(),
+        default=all_data['order_status'].unique()
+    )
+
+    # Filter data for Tab 1 based on selected order status
+    filtered_data = all_data[all_data['order_status'].isin(order_status)]
+
+    # Check if the filtered data is empty
+    if filtered_data.empty:
+        st.warning("No data available for the selected order status. Please adjust your selection.")
+    else:
+        # Creating the matplotlib histogram for delivery time
+        fig, ax = plt.subplots(figsize=(12, 6))
+        n, bins, patches = ax.hist(filtered_data['delivery_time_days'].dropna(), bins=15, edgecolor='black',
+                                   color='#6A5ACD', alpha=0.75)
+
+        # Add grid lines along the y-axis for better readability
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+
+        # Add labels for axes
+        ax.set_xlabel('Delivery Time (Days)', fontsize=14, labelpad=10)
+        ax.set_ylabel('Number of Orders', fontsize=14, labelpad=10)
+
+        # Add a title to the plot
+        ax.set_title('Distribution of Delivery Time Across Brazil', fontsize=16, fontweight='bold', pad=15)
+
+        # Adding annotations for each bar to display the count
+        for i in range(len(patches)):
+            height = n[i]
+            if height > 0:
+                ax.text(
+                    patches[i].get_x() + patches[i].get_width() / 2,
+                    height + max(n) * 0.02,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=10,
+                    color='black'
+                )
+
+        # Highlighting specific bins
+        for patch in patches:
+            if patch.get_height() > 5000:
+                patch.set_facecolor('#FFA07A')
+            else:
+                patch.set_facecolor('#87CEFA')
+
+        # Adding a legend to explain the bar colors
+        legend_elements = [
+            Patch(facecolor='#FFA07A', edgecolor='black', label='High Count (> 5000 Orders)'),
+            Patch(facecolor='#87CEFA', edgecolor='black', label='Moderate Count')
+        ]
+        ax.legend(handles=legend_elements, loc='upper right', fontsize=12, title="Order Count Categories")
+
+        # Adding some visual separation at the borders of the bars
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        st.pyplot(fig)
+
+        st.write(conclusions['tab1'])
+
+# Visualization 2: Recency Distribution Analysis
+with tab2:
+    st.header("Recency Distribution Analysis")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    n, bins, patches = ax.hist(rfm_data['recency'], bins=20, edgecolor='black', color='#4682B4', alpha=0.7)
+
+    # Add grid lines for better readability
     ax.grid(axis='y', linestyle='--', alpha=0.6)
 
-    # Add labels for axes
-    ax.set_xlabel('Delivery Time (Days)', fontsize=14, labelpad=10)
-    ax.set_ylabel('Number of Orders', fontsize=14, labelpad=10)
+    # Set the labels and title for the plot
+    ax.set_xlabel('Days Since Last Purchase', fontsize=14, labelpad=10)
+    ax.set_ylabel('Number of Customers', fontsize=14, labelpad=10)
+    ax.set_title('Recency Distribution of Customers', fontsize=16, fontweight='bold', pad=15)
 
-    # Add a title to the plot
-    ax.set_title('Distribution of Delivery Time Across Brazil', fontsize=16, fontweight='bold', pad=15)
-
-    # Adding annotations for each bar to display the count
+    # Add annotations to each bar to display the count
     for i in range(len(patches)):
         height = n[i]
         if height > 0:
             ax.text(
                 patches[i].get_x() + patches[i].get_width() / 2,
-                height + max(n) * 0.02,
+                height + 50,
                 f'{int(height)}',
                 ha='center',
                 va='bottom',
@@ -75,92 +183,310 @@ with tab1:
                 color='black'
             )
 
-    # Highlighting specific bins
-    for patch in patches:
-        if patch.get_height() > 5000:
-            patch.set_facecolor('#FFA07A')
+    st.pyplot(fig)
+
+    st.write(conclusions['tab2'])
+
+# Visualization 3: Customer Purchase Frequency
+with tab3:
+    # Default values for Q3 2018
+    default_year = 2018
+    default_quarters = [3]
+    st.header("Frequency of Purchases by Customers")
+
+    # Add custom filter widgets for Year and Quarter
+    available_years = sorted(rfm_data['year'].dropna().unique().astype(int))
+    available_quarters = [1, 2, 3, 4]
+
+    # Allow multi-select for years and quarters
+    selected_years = st.multiselect("Select Year(s)", options=available_years, default=[default_year])
+    selected_quarters = st.multiselect("Select Quarter(s)", options=available_quarters, default=default_quarters)
+
+    # Filter the data based on the selected year(s) and quarter(s)
+    if selected_years and selected_quarters:
+        filtered_data = rfm_data[
+            (rfm_data['year'].isin(selected_years)) & (rfm_data['quarter'].isin(selected_quarters))]
+    else:
+        filtered_data = pd.DataFrame()  # Empty dataframe if no year or quarter is selected
+
+    # Set dynamic header based on user selection
+    if selected_years and selected_quarters:
+        years_str = ', '.join(map(str, selected_years))
+        quarters_str = ', '.join(map(str, selected_quarters))
+        dynamic_header = f"Frequency of Purchases by Customers in Year(s): {years_str}, Quarter(s): {quarters_str}"
+    else:
+        dynamic_header = "Frequency of Purchases by Customers (No Year/Quarter Selected)"
+
+    st.header(dynamic_header)
+
+    # If there are no quarters selected or filtered_data is empty, display a message
+    if filtered_data.empty:
+        st.warning("No data available for the selected year and quarter(s). Please adjust your selection.")
+    else:
+        # Set up the figure size and plot histogram for Streamlit
+        fig, ax = plt.subplots(figsize=(12, 6))
+        n, bins, patches = ax.hist(
+            filtered_data['frequency'],
+            bins=15,
+            edgecolor='black',
+            log=True,
+            color='lightcoral',
+            alpha=0.75
+        )
+
+        # Set labels and title with increased font size and bold styling
+        ax.set_xlabel('Number of Purchases (Frequency)', fontsize=14)
+        ax.set_ylabel('Number of Customers (Log Scale)', fontsize=14)
+        ax.set_title(
+            f'Frequency of Purchases by Customers in Year(s): {years_str}, Quarter(s): {quarters_str} (Log Scale)',
+            fontsize=16, weight='bold')
+
+        # Adding grid lines for better readability
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+        # Adding text annotations for each bar
+        for i in range(len(patches)):
+            height = n[i]
+            if height > 0:
+                ax.text(
+                    patches[i].get_x() + patches[i].get_width() / 2,
+                    height,
+                    f'{int(height)}',
+                    ha='center',
+                    va='bottom',
+                    fontsize=10,
+                    color='black',  # Use a contrasting color to make text annotations visible
+                    fontweight='bold'
+                )
+
+        # Set limits and style for the y-axis
+        ax.set_ylim(bottom=0.5)
+        ax.set_yscale('log')
+        ax.set_yticks([1, 10, 100, 1000, 10000])
+        ax.set_yticklabels(['1', '10', '100', '1K', '10K'])  # Customize tick labels
+
+        # Add some decorative elements
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        # Adding a legend to clarify that the bars represent frequency counts
+        ax.legend(['Customer Frequency'], loc='upper right', fontsize=12, title='Legend')
+
+        # Display the plot in Streamlit
+        st.pyplot(fig)
+
+        st.write(conclusions['tab3'])
+
+# Visualization 4: Average Expenditure Per Customer with Year Filter
+with tab4:
+    # Add custom filter widgets for Year within Tab 4
+    st.header("Customer Expenditure Analysis")
+    st.subheader("Filter Options")
+
+    # Multiselect widget for selecting the year, default set to 2018
+    available_years = sorted(rfm_data['year'].dropna().unique().astype(int))
+    selected_years = st.multiselect(
+        "Select Year(s) for Analysis:",
+        options=available_years,
+        default=[2018]
+    )
+
+    # Filter the data based on selected years from rfm_data
+    filtered_data = rfm_data[rfm_data['year'].isin(selected_years)]
+
+    # If no years are selected or filtered_data is empty, display a warning
+    if filtered_data.empty:
+        st.warning("No data available for the selected year(s). Please adjust your selection.")
+    else:
+        # Set the title based on selected years
+        selected_years_str = ', '.join(map(str, selected_years))
+        plot_title = f"Boxplot of Customer Expenditure in {selected_years_str}"
+
+        # Create the boxplot for the filtered data
+        fig, ax = plt.subplots(figsize=(12, 6))
+
+        # Draw the boxplot with enhancements
+        box = ax.boxplot(
+            filtered_data['monetary'],
+            vert=False,
+            patch_artist=True,
+            boxprops=dict(facecolor='lightblue', color='navy', linewidth=1.5),
+            medianprops=dict(color='red', linewidth=2),
+            whiskerprops=dict(color='navy', linestyle='--', linewidth=1.5),
+            capprops=dict(color='navy', linewidth=1.5),
+            flierprops=dict(marker='o', color='orange', alpha=0.5, markersize=6)
+        )
+
+        # Set the labels and title
+        ax.set_xlabel('Total Expenditure (BRL)', fontsize=14)
+        ax.set_title(plot_title, fontsize=16, weight='bold')
+        ax.set_yticks([])  # Remove y-axis ticks since we have a single boxplot
+
+        # Adding grid for better readability
+        ax.grid(axis='x', linestyle='--', alpha=0.7)
+
+        # Highlight the median value with annotation
+        median = filtered_data['monetary'].median()
+        ax.annotate(
+            f'Median: {median:.2f}',
+            xy=(median, 1),
+            xytext=(median + 200, 1.1),
+            arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.5),
+            fontsize=12, color='darkred'
+        )
+
+        # Add some decorations to make it more polished
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        st.pyplot(fig)
+
+        st.write(conclusions['tab4'])
+
+# Visualization 5: Regions with the Highest Number of Purchases
+with tab5:
+    st.header("Regions with the Highest Number of Purchases")
+
+    # Aggregate number of purchases by state using all_data
+    state_purchases = all_data.groupby('customer_state')['order_id'].count().reset_index()
+    state_purchases.columns = ['state', 'total_purchases']
+    state_purchases = state_purchases.sort_values(by='total_purchases', ascending=False)
+
+    # Load GeoJSON file for Brazil states boundaries
+    geojson_file_path = '../map/brazil-states.geojson'
+    try:
+        with open(geojson_file_path, 'r') as f:
+            brazil_geo = json.load(f)
+    except FileNotFoundError:
+        st.error(f"GeoJSON file not found at {geojson_file_path}. Please check the path.")
+        st.stop()
+
+    # Merge GeoJSON data with state purchase data to include the total_purchases field
+    for feature in brazil_geo['features']:
+        state_code = feature['properties']['sigla']
+        purchase_info = state_purchases[state_purchases['state'] == state_code]
+        if not purchase_info.empty:
+            feature['properties']['total_purchases'] = int(purchase_info['total_purchases'].values[0])
         else:
-            patch.set_facecolor('#87CEFA')
+            feature['properties']['total_purchases'] = 0
 
-    # Adding a legend to explain the bar colors
-    legend_elements = [
-        Patch(facecolor='#FFA07A', edgecolor='black', label='High Count (> 5000 Orders)'),
-        Patch(facecolor='#87CEFA', edgecolor='black', label='Moderate Count')
+    # Create a base map centered around Brazil
+    brazil_map = folium.Map(location=[-14.2350, -51.9253], zoom_start=4, tiles='cartodbpositron')
+
+    # Add the Choropleth layer for visualizing the number of purchases by state
+    folium.Choropleth(
+        geo_data=brazil_geo,
+        name='choropleth',
+        data=state_purchases,
+        columns=['state', 'total_purchases'],
+        key_on='feature.properties.sigla',
+        fill_color='YlGnBu',
+        fill_opacity=0.5,
+        line_opacity=0.3,
+        line_color='black',
+        legend_name='Number of Purchases by State',
+        highlight=True
+    ).add_to(brazil_map)
+
+    # Add custom tooltips for additional information about each state
+    style_function = lambda x: {
+        'fillColor': '#ffffff',
+        'color': '#000000',
+        'fillOpacity': 0.1,
+        'weight': 0.1
+    }
+    highlight_function = lambda x: {
+        'fillColor': '#0000ff',
+        'color': '#000000',
+        'fillOpacity': 0.5,
+        'weight': 0.4
+    }
+
+    # Add GeoJson layer with tooltips showing state name, state code, and total purchases
+    folium.GeoJson(
+        brazil_geo,
+        style_function=style_function,
+        control=False,
+        highlight_function=highlight_function,
+        tooltip=folium.GeoJsonTooltip(
+            fields=['sigla', 'name', 'total_purchases'],  # Use fields from the GeoJSON properties
+            aliases=['State Code:', 'State Name:', 'Total Purchases:'],
+            localize=True
+        )
+    ).add_to(brazil_map)
+
+    # Add a layer control panel to the map
+    folium.LayerControl(collapsed=False).add_to(brazil_map)
+
+    # Display the map in Streamlit
+    folium_static(brazil_map)
+
+    st.write(conclusions['tab5'])
+
+
+# Visualization 6: Customer Segmentation Based on Purchase Frequency
+with tab6:
+    st.header("Customer Segmentation Based on Purchase Frequency in a Year")
+
+    # Define the segments and calculate the counts based on frequency
+    low_segment = rfm_data[rfm_data['frequency'] == 1]
+    medium_segment = rfm_data[(rfm_data['frequency'] >= 2) & (rfm_data['frequency'] <= 3)]
+    high_segment = rfm_data[(rfm_data['frequency'] >= 4) & (rfm_data['frequency'] <= 10)]
+    very_high_segment = rfm_data[rfm_data['frequency'] > 10]
+
+    # Count the number of customers in each segment
+    segment_counts = [
+        len(low_segment),
+        len(medium_segment),
+        len(high_segment),
+        len(very_high_segment)
     ]
-    ax.legend(handles=legend_elements, loc='upper right', fontsize=12, title="Order Count Categories")
 
-    # Adding some visual separation at the borders of the bars
+    # Define labels and colors for the segments
+    segment_conditions = ['Low: 1 Purchase', 'Medium: 2-3 Purchases', 'High: 4-10 Purchases',
+                          'Very High: > 10 Purchases']
+    segment_colors = ['skyblue', 'orange', 'green', 'red']
+
+    # Create the bar chart
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Plotting bars with the respective colors
+    bars = ax.bar(range(len(segment_counts)), segment_counts, color=segment_colors, edgecolor='black')
+
+    # Adding text annotations for each bar
+    for i, bar in enumerate(bars):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 50,  # Adjust the position above the bar
+            f'{int(bar.get_height())}',  # Display the height value as an integer
+            ha='center',
+            va='bottom',
+            fontsize=10
+        )
+
+    # Adding labels and title
+    ax.set_xlabel('Customer Segment', fontsize=14)
+    ax.set_ylabel('Number of Customers', fontsize=14)
+    ax.set_title('Customer Segmentation Based on Purchase Frequency in a Year', fontsize=16, weight='bold')
+
+    # Adding the legend
+    legend = ax.legend(
+        handles=bars,
+        labels=segment_conditions,
+        loc='upper right',
+        shadow=True,
+        fontsize='medium',
+        title="Segment Conditions"
+    )
+
+    # Remove top and right spines for better aesthetics
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
+    # Adding gridlines for better readability
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Display the plot in Streamlit
     st.pyplot(fig)
 
-# Visualization 2: Purchase Frequency
-with tab2:
-    st.header("Frequency of Purchases by Customers in July, August, and September 2018")
-    purchase_frequency = \
-    filtered_data[filtered_data['order_purchase_timestamp'].str.contains('2018')].groupby('customer_id')[
-        'order_id'].count()
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    n, bins, patches = plt.hist(purchase_frequency, bins=15, edgecolor='black', color='salmon', log=True)
-    ax.set_xlabel("Number of Purchases (Frequency)")
-    ax.set_ylabel("Number of Customers (Log Scale)")
-    ax.set_title("Frequency of Purchases by Customers in Q3 2018 (Log Scale)")
-    # Adding text annotations for each bar
-    for i in range(len(patches)):
-        height = n[i]
-        if height > 0:
-            ax.text(patches[i].get_x() + patches[i].get_width() / 2, height, f'{int(height)}', ha='center', va='bottom',
-                    fontsize=10)
-    st.pyplot(fig)
-
-# Visualization 3: Customer Segmentation Based on Purchases
-with tab3:
-    st.header("Customer Segmentation Based on Purchase Frequency in 2018")
-    recency = filtered_data.groupby('customer_id').agg({'order_purchase_timestamp': 'max'})
-    recency['order_purchase_timestamp'] = pd.to_datetime(recency['order_purchase_timestamp'])
-    recency['recency_days'] = (pd.Timestamp.now() - recency['order_purchase_timestamp']).dt.days
-
-    # Segment data
-    customer_segment = pd.cut(recency['recency_days'], bins=[0, 30, 60, 90, float('inf')],
-                              labels=['New', 'Active', 'Idle', 'Lapsed'])
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.countplot(x=customer_segment, palette='viridis', ax=ax)
-    ax.set_xlabel("Customer Segment")
-    ax.set_ylabel("Number of Customers")
-    ax.set_title("Customer Segmentation Based on Recency Days")
-    st.pyplot(fig)
-
-# Visualization 4: Geographic Analysis with Folium
-with tab4:
-    st.header("Geographic Distribution of Purchases Across Brazil")
-
-    # Load GeoJSON data
-    with open('../map/brazil-states.geojson', 'r') as file:
-        brazil_geo = json.load(file)
-
-    state_purchases = filtered_data.groupby('customer_state')['order_id'].count().reset_index()
-    state_purchases.columns = ['state', 'total_purchases']
-
-    # Plotting Folium map
-    m = folium.Map(location=[-14.2350, -51.9253], zoom_start=4)
-    folium.Choropleth(
-        geo_data=brazil_geo,
-        name="choropleth",
-        data=state_purchases,
-        columns=['state', 'total_purchases'],
-        key_on="feature.properties.sigla",
-        fill_color="YlGnBu",
-        fill_opacity=0.7,
-        line_opacity=0.2,
-        legend_name="Number of Purchases by State",
-    ).add_to(m)
-
-    folium_static(m)
-
-# Conclusion and Custom Styling
-st.markdown("### Conclusion")
-st.write(
-    "Through these visualizations, we were able to understand customer purchase behavior, delivery times, and geographic purchase patterns across Brazil.")
+    st.write(conclusions['tab6'])
