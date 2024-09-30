@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import seaborn as sns
 import plotly.express as px
 import folium
@@ -45,13 +46,53 @@ tab1, tab2, tab3, tab4 = st.tabs(
 
 # Visualization 1: Delivery Time Analysis
 with tab1:
+    # Creating the matplotlib histogram for delivery time
     st.header("Distribution of Delivery Time Across Brazil")
-    delivery_time = filtered_data['delivery_time_days'].dropna()
     fig, ax = plt.subplots(figsize=(12, 6))
-    sns.histplot(delivery_time, bins=15, edgecolor='black', color='skyblue', ax=ax)
-    ax.set_xlabel("Delivery Time (Days)")
-    ax.set_ylabel("Number of Orders")
-    ax.set_title("Distribution of Delivery Time Across Brazil")
+    n, bins, patches = ax.hist(filtered_data['delivery_time_days'].dropna(), bins=15, edgecolor='black', color='#6A5ACD', alpha=0.75)
+
+    # Add grid lines along the y-axis for better readability
+    ax.grid(axis='y', linestyle='--', alpha=0.6)
+
+    # Add labels for axes
+    ax.set_xlabel('Delivery Time (Days)', fontsize=14, labelpad=10)
+    ax.set_ylabel('Number of Orders', fontsize=14, labelpad=10)
+
+    # Add a title to the plot
+    ax.set_title('Distribution of Delivery Time Across Brazil', fontsize=16, fontweight='bold', pad=15)
+
+    # Adding annotations for each bar to display the count
+    for i in range(len(patches)):
+        height = n[i]
+        if height > 0:
+            ax.text(
+                patches[i].get_x() + patches[i].get_width() / 2,
+                height + max(n) * 0.02,
+                f'{int(height)}',
+                ha='center',
+                va='bottom',
+                fontsize=10,
+                color='black'
+            )
+
+    # Highlighting specific bins
+    for patch in patches:
+        if patch.get_height() > 5000:
+            patch.set_facecolor('#FFA07A')
+        else:
+            patch.set_facecolor('#87CEFA')
+
+    # Adding a legend to explain the bar colors
+    legend_elements = [
+        Patch(facecolor='#FFA07A', edgecolor='black', label='High Count (> 5000 Orders)'),
+        Patch(facecolor='#87CEFA', edgecolor='black', label='Moderate Count')
+    ]
+    ax.legend(handles=legend_elements, loc='upper right', fontsize=12, title="Order Count Categories")
+
+    # Adding some visual separation at the borders of the bars
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
     st.pyplot(fig)
 
 # Visualization 2: Purchase Frequency
